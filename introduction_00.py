@@ -187,10 +187,10 @@ from mpl_toolkits.basemap import Basemap
 
 curr = os.getcwd()
 
-flood_data_dir = os.path.abspath(os.path.join(curr, "flood_data"))
+flood_data_dir = os.path.abspath(os.path.join(curr, "data", "flood_data"))
 
-%set_env LOCAL_DATA_DIR= flood_data_dir
-
+#%set_env LOCAL_DATA_DIR= flood_data_dir
+os.environ["LOCAL_DATA_DIR"] = flood_data_dir
 # set paths for images and masks
 image_dir=os.path.join(os.getenv('LOCAL_DATA_DIR'), 'images')
 mask_dir=os.path.join(os.getenv('LOCAL_DATA_DIR'), 'masks')
@@ -236,10 +236,10 @@ display(sorted(masks_count.items(), key=lambda x: x[1]))
 # * Modify the `<FIXME>` only to the number of tiles in the dataset. 
 
 # %%
-The total number of tiles is: <<<<FIXME>>>>
+#The total number of tiles is: <<<<FIXME>>>>
 
 # %%
-The total number of tiles is: 446
+#The total number of tiles is: 446
 
 # %% [markdown]
 # Click ... to show **solution**. 
@@ -422,7 +422,7 @@ tiles_by_boundaries(left_top=(-0.966, 38.4), right_bottom=(-0.597, 38.0), plot_t
 #     * The `tiles_by_boundaries` function accepts parameters such as `left_top`, `right_bottom`, and `plot_type` (`images` or `masks`). The boundaries should be in (`longitude`, `latitude`) format. In addition, the boundaries should be **negative** for **West** of the **Prime Meridian** and **South** of the **Equator**. Feel free to refer to the above chart for **Longitude** and **Latitude** values. 
 
 # %%
-tiles_by_region(region_name='<<<<FIXME>>>>', plot_type='<<<<FIXME>>>>')
+tiles_by_region(region_name='Ghana', plot_type='images')
 
 # %%
 tiles_by_boundaries(left_top=(<<<<FIXME>>>>, <<<<FIXME>>>>), right_bottom=(<<<<FIXME>>>>, <<<<FIXME>>>>), plot_type='<<<<FIXME>>>>')
@@ -430,7 +430,7 @@ tiles_by_boundaries(left_top=(<<<<FIXME>>>>, <<<<FIXME>>>>), right_bottom=(<<<<F
 # %%
 tiles_by_region(region_name='Spain', plot_type='images')
 tiles_by_region(region_name='Spain', plot_type='masks')
-
+#%%
 tiles_by_boundaries(left_top=(-0.966, 38.4), right_bottom=(-0.597, 38.0), plot_type='images')
 tiles_by_boundaries(left_top=(-0.966, 38.4), right_bottom=(-0.597, 38.0), plot_type='masks')
 
@@ -443,7 +443,11 @@ tiles_by_boundaries(left_top=(-0.966, 38.4), right_bottom=(-0.597, 38.0), plot_t
 # Deep learning models require vast amounts of data to produce accurate predictions, and this need becomes more significant as models grow in size and complexity. Regardless of the model, some degree of pre-processing is required for training and inference. In computer vision applications, the pre-processing usually includes decoding, resizing, and normalizing to a standardized format accepted by the neural network. Data pre-processing for deep learning workloads has garnered little attention until recently, eclipsed by the tremendous computational resources required for training complex models. These pre-processing routines, often referred to as pipelines, are currently executed on the CPU using libraries such as [OpenCV](https://docs.opencv.org/4.x/d6/d00/tutorial_py_root.html), [Pillow](https://python-pillow.org/), or [Rasterio](https://rasterio.readthedocs.io/en/latest/). Today’s deep learning applications include complex, multi-stage data processing pipelines consisting of many serial operations. Relying on the CPU to handle these pipelines has become a bottleneck that limits performance and scalability. 
 # <p><img src='images/dali.png' width=720></p>
 # 
-# The **NVIDIA Data Loading Library** (DALI) is a library for data loading and pre-processing to accelerate deep learning applications. It provides a collection of highly optimized building blocks for loading and processing image, video, and audio data. DALI addresses the problem of the CPU bottleneck by offloading data pre-processing to the GPU. In addition, it offers some powerful features: 
+# The **NVIDIA Data Loading Library** (DALI) is a library for data loading and pre-processing to 
+# accelerate deep learning applications. It provides a collection of highly optimized building blocks 
+# for loading and processing image, video, and audio data. DALI addresses the problem of the CPU 
+# bottleneck by offloading data pre-processing to the GPU. In addition, it offers some powerful 
+# features: 
 # * DALI offers data processing primitives for a variety of deep learning applications. The supported input formats include most used image file formats. 
 # * DALI relies on its own execution engine, built to maximize the throughput of the input pipeline. 
 # * It can be used as a portable drop-in replacement for built-in data loaders and data iterators in popular deep learning frameworks. 
@@ -454,7 +458,8 @@ tiles_by_boundaries(left_top=(-0.966, 38.4), right_bottom=(-0.597, 38.0), plot_t
 # %% [markdown]
 # <a name='s1-4.1'></a>
 # ###  DALI Pipeline ###
-# At the core of data processing with DALI lies the concept of a data processing `pipeline`. It is composed of multiple operations connected in a directed graph and contained in an object of class `nvidia.dali.Pipeline`. This class provides the ability to define, build, and run data processing pipelines. Each operator in the pipeline typically gets one or more inputs, applies some kind of data processing, and produces one or more outputs. There are special kinds of operators that don’t take any inputs and produce outputs. Those special operators that act like a data source, _readers_, _random number generators_ and _external source_ fall into this category. 
+# At the core of data processing with DALI lies the concept of a data processing `pipeline`. 
+# It is composed of multiple operations connected in a directed graph and contained in an object of class `nvidia.dali.Pipeline`. This class provides the ability to define, build, and run data processing pipelines. Each operator in the pipeline typically gets one or more inputs, applies some kind of data processing, and produces one or more outputs. There are special kinds of operators that don’t take any inputs and produce outputs. Those special operators that act like a data source, _readers_, _random number generators_ and _external source_ fall into this category. 
 # 
 # DALI offers CPU and GPU implementations for a wide range of processing operators. The availability of a CPU or GPU implementation depends on the nature of the operator. Make sure to check the documentation for an [up-to-date list of supported operations](https://docs.nvidia.com/deeplearning/dali/user-guide/docs/#operations), as it is expanded with every release. The easiest way to define a DALI pipeline is using the `pipeline_def` Python [decorator](https://peps.python.org/pep-0318/). To create a pipeline, we define a function where we instantiate and connect the desired operators and return the relevant outputs. Then just decorate it with `pipeline_def`. 
 # 
@@ -491,6 +496,8 @@ def simple_pipeline():
 # DO NOT CHANGE THIS CELL
 # create and build pipeline
 pipe=simple_pipeline(batch_size=batch_size, num_threads=4, device_id=0)
+
+#%%
 pipe.build()
 
 # %% [markdown]
